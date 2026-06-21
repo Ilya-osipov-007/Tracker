@@ -15,6 +15,7 @@ final class TrackersViewController: UIViewController {
 
     private var visibleCategories: [TrackerCategory] = []
     private var searchText: String = ""
+    private var isDatePickerAttached = false
 
     // MARK: - UI
 
@@ -97,7 +98,8 @@ final class TrackersViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let navbar = navigationController?.navigationBar,
-              datePicker.superview == nil else { return }
+              !isDatePickerAttached else { return }
+        isDatePickerAttached = true
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         navbar.addSubview(datePicker)
         NSLayoutConstraint.activate([
@@ -110,6 +112,7 @@ final class TrackersViewController: UIViewController {
         super.viewDidDisappear(animated)
         if datePicker.superview is UINavigationBar {
             datePicker.removeFromSuperview()
+            isDatePickerAttached = false
         }
     }
 
