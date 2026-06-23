@@ -35,6 +35,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let tabBar = UITabBarController()
         tabBar.viewControllers = [trackersVC, statisticsVC]
+
+        if #unavailable(iOS 26) {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.shadowColor = .opaqueSeparator
+            tabBar.tabBar.standardAppearance = appearance
+            tabBar.tabBar.scrollEdgeAppearance = appearance
+        }
+
         return tabBar
     }
 

@@ -15,6 +15,7 @@ final class TrackersViewController: UIViewController {
 
     private var visibleCategories: [TrackerCategory] = []
     private var searchText: String = ""
+    private var isDatePickerAttached = false
 
     // MARK: - UI
 
@@ -97,7 +98,8 @@ final class TrackersViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let navbar = navigationController?.navigationBar,
-              datePicker.superview == nil else { return }
+              !isDatePickerAttached else { return }
+        isDatePickerAttached = true
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         navbar.addSubview(datePicker)
         NSLayoutConstraint.activate([
@@ -110,6 +112,7 @@ final class TrackersViewController: UIViewController {
         super.viewDidDisappear(animated)
         if datePicker.superview is UINavigationBar {
             datePicker.removeFromSuperview()
+            isDatePickerAttached = false
         }
     }
 
@@ -150,25 +153,23 @@ final class TrackersViewController: UIViewController {
 
     // MARK: - Filtering
 
-    private func filterTrackers() {
-        let weekdayIndex = Calendar.current.component(.weekday, from: currentDate)
-        guard let currentWeekDay = WeekDay(rawValue: weekdayIndex) else { return }
+    private func filteredCategories(for date: Date, searchText: String) -> [TrackerCategory] {
+        let weekdayIndex = Calendar.current.component(.weekday, from: date)
+        guard let weekDay = WeekDay(rawValue: weekdayIndex) else { return [] }
 
-        visibleCategories = categories.compactMap { category in
+        return categories.compactMap { category in
             let filtered = category.trackers.filter { tracker in
-                let matchesSchedule: Bool
-                if let schedule = tracker.schedule {
-                    matchesSchedule = schedule.contains(currentWeekDay)
-                } else {
-                    matchesSchedule = true
-                }
+                let matchesSchedule = tracker.schedule.map { $0.contains(weekDay) } ?? true
                 let matchesSearch = searchText.isEmpty ||
                     tracker.name.localizedCaseInsensitiveContains(searchText)
                 return matchesSchedule && matchesSearch
             }
             return filtered.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filtered)
         }
+    }
 
+    private func filterTrackers() {
+        visibleCategories = filteredCategories(for: currentDate, searchText: searchText)
         collectionView.reloadData()
         updatePlaceholder()
     }
