@@ -82,7 +82,7 @@ final class NewCategoryViewController: UIViewController {
         guard let name = nameTextField.text?.trimmingCharacters(in: .whitespaces),
               !name.isEmpty else { return }
         CategoriesManager.shared.categories.append(name)
-        navigationController?.popViewController(animated: true)
+        dismiss(animated: true)
     }
 
     @objc private func dismissKeyboard() {

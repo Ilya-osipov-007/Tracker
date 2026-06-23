@@ -7,8 +7,8 @@ import UIKit
 
 final class ScheduleViewController: UIViewController {
 
-    var onScheduleSelected: ((Set<WeekDay>) -> Void)?
-    private var selectedDays: Set<WeekDay>
+    var onScheduleSelected: ((Schedule) -> Void)?
+    private var selectedDays: Schedule
 
     // MARK: - UI
 
@@ -41,7 +41,7 @@ final class ScheduleViewController: UIViewController {
 
     // MARK: - Init
 
-    init(selectedDays: Set<WeekDay>) {
+    init(selectedDays: Schedule) {
         self.selectedDays = selectedDays
         super.init(nibName: nil, bundle: nil)
     }

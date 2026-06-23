@@ -114,7 +114,8 @@ final class CategoryListViewController: UIViewController {
 
     @objc private func addCategoryTapped() {
         let vc = NewCategoryViewController()
-        navigationController?.pushViewController(vc, animated: true)
+        let nav = UINavigationController(rootViewController: vc)
+        present(nav, animated: true)
     }
 }
 
@@ -130,6 +131,7 @@ extension CategoryListViewController: UITableViewDataSource {
         let category = categories[indexPath.row]
         cell.textLabel?.text = category
         cell.textLabel?.font = .systemFont(ofSize: 17)
+        cell.textLabel?.textColor = UIColor(named: "Black day")
         cell.backgroundColor = .systemGray6
         cell.selectionStyle = .none
         cell.tintColor = .systemBlue
