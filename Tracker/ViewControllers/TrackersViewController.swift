@@ -204,7 +204,11 @@ final class TrackersViewController: UIViewController {
     // MARK: - Adding trackers
 
     func addTracker(_ tracker: Tracker, toCategory categoryTitle: String) {
-        try? categoryStore.addTracker(tracker, toCategory: categoryTitle)
+        do {
+            try categoryStore.addTracker(tracker, toCategory: categoryTitle)
+        } catch {
+            assertionFailure("Не удалось сохранить трекер: \(error)")
+        }
     }
 
     // MARK: - Actions
@@ -303,10 +307,14 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
 extension TrackersViewController: TrackerCellDelegate {
     func trackerCell(_ cell: TrackerCell, didToggleCompletionFor trackerId: UUID) {
         let record = TrackerRecord(trackerId: trackerId, date: currentDate)
-        if recordStore.completedTrackers.contains(record) {
-            try? recordStore.remove(record)
-        } else {
-            try? recordStore.add(record)
+        do {
+            if recordStore.completedTrackers.contains(record) {
+                try recordStore.remove(record)
+            } else {
+                try recordStore.add(record)
+            }
+        } catch {
+            assertionFailure("Не удалось сохранить отметку выполнения: \(error)")
         }
         collectionView.reloadData()
     }
