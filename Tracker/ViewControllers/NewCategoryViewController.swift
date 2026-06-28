@@ -81,7 +81,7 @@ final class NewCategoryViewController: UIViewController {
     @objc private func doneTapped() {
         guard let name = nameTextField.text?.trimmingCharacters(in: .whitespaces),
               !name.isEmpty else { return }
-        CategoriesManager.shared.categories.append(name)
+        CategoriesManager.shared.addCategory(title: name)
         dismiss(animated: true)
     }
 
