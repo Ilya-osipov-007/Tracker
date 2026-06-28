@@ -9,8 +9,14 @@ final class TrackersViewController: UIViewController {
 
     // MARK: - Data
 
-    var categories: [TrackerCategory] = [TrackerCategory(title: "Важное", trackers: [])]
-    var completedTrackers: Set<TrackerRecord> = []
+    private lazy var categoryStore: TrackerCategoryStore = {
+        let store = TrackerCategoryStore()
+        store.delegate = self
+        return store
+    }()
+    private lazy var recordStore = TrackerRecordStore()
+
+    var categories: [TrackerCategory] { categoryStore.categories }
     var currentDate: Date = Date()
 
     private var visibleCategories: [TrackerCategory] = []
@@ -184,11 +190,11 @@ final class TrackersViewController: UIViewController {
     // MARK: - Tracker helpers
 
     private func completionCount(for tracker: Tracker) -> Int {
-        completedTrackers.filter { $0.trackerId == tracker.id }.count
+        recordStore.completedTrackers.filter { $0.trackerId == tracker.id }.count
     }
 
     private func isCompleted(_ tracker: Tracker) -> Bool {
-        completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDate))
+        recordStore.completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: currentDate))
     }
 
     private func isFutureDate(_ date: Date) -> Bool {
@@ -198,15 +204,7 @@ final class TrackersViewController: UIViewController {
     // MARK: - Adding trackers
 
     func addTracker(_ tracker: Tracker, toCategory categoryTitle: String) {
-        if let index = categories.firstIndex(where: { $0.title == categoryTitle }) {
-            var updated = categories
-            let old = updated[index]
-            updated[index] = TrackerCategory(title: old.title, trackers: old.trackers + [tracker])
-            categories = updated
-        } else {
-            categories.append(TrackerCategory(title: categoryTitle, trackers: [tracker]))
-        }
-        filterTrackers()
+        try? categoryStore.addTracker(tracker, toCategory: categoryTitle)
     }
 
     // MARK: - Actions
@@ -228,6 +226,14 @@ final class TrackersViewController: UIViewController {
 
     @objc private func dismissKeyboard() {
         view.endEditing(true)
+    }
+}
+
+// MARK: - TrackerCategoryStoreDelegate
+
+extension TrackersViewController: TrackerCategoryStoreDelegate {
+    func storeDidUpdate() {
+        filterTrackers()
     }
 }
 
@@ -297,10 +303,10 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
 extension TrackersViewController: TrackerCellDelegate {
     func trackerCell(_ cell: TrackerCell, didToggleCompletionFor trackerId: UUID) {
         let record = TrackerRecord(trackerId: trackerId, date: currentDate)
-        if completedTrackers.contains(record) {
-            completedTrackers.remove(record)
+        if recordStore.completedTrackers.contains(record) {
+            try? recordStore.remove(record)
         } else {
-            completedTrackers.insert(record)
+            try? recordStore.add(record)
         }
         collectionView.reloadData()
     }
